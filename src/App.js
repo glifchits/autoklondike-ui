@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cloneDeep, last } from "lodash";
-import moveSeq from "./moveSeq";
 import "./App.scss";
-window.moveSeq = moveSeq;
+window.moveSeq = null;
 
 const FOUNDATION = {
   0: "C",
@@ -38,41 +37,8 @@ function drawMove(numToDraw) {
 let initialState = {
   foundation: [[], [], [], []],
   waste: [],
-  stock: [
-    "8d",
-    "7c",
-    "8h",
-    "jd",
-    "9c",
-    "3s",
-    "2s",
-    "9h",
-    "10c",
-    "10d",
-    "9s",
-    "6h",
-    "jh",
-    "ad",
-    "5d",
-    "ac",
-    "10s",
-    "2d",
-    "7h",
-    "5s",
-    "5c",
-    "6c",
-    "qs",
-    "4d"
-  ],
-  tableau: [
-    ["KH"],
-    ["3h", "QC"],
-    ["2h", "7s", "3C"],
-    ["4h", "4s", "6s", "7D"],
-    ["5h", "8c", "qh", "jc", "2C"],
-    ["js", "qd", "9d", "8s", "ah", "10H"],
-    ["6d", "kc", "kd", "4c", "ks", "as", "3D"]
-  ]
+  stock: [],
+  tableau: [[], [], [], [], [], [], []]
 };
 
 function parseCard(card) {
@@ -91,12 +57,22 @@ function App() {
   const [state, setStateImpl] = useState(initialState);
   const [clicked, setClicked] = useState(null);
 
+  useEffect(() => {
+    let seed = 12;
+    fetch(`http://localhost:3005/game/${seed}`)
+      .then(r => r.json())
+      .then(({ deck, moveSeq }) => {
+        window.moveSeq = moveSeq;
+        setStateImpl({ ...state, ...deck });
+      });
+  }, []);
+
   function doMoveFromSequence() {
-    if (moveSeq.length === 0) {
+    if (window.moveSeq.length === 0) {
       console.error("no moves left!");
       return;
     }
-    let move = moveSeq.shift();
+    let move = window.moveSeq.shift();
     console.log("move", move);
     let newState = cloneDeep(state);
     if (move.match(/^(\d)(\d)$/)) {
@@ -143,8 +119,8 @@ function App() {
     } else {
       debugger;
     }
-    if (moveSeq.length >= 1 && moveSeq[0].match(/^F(\d+)$/)) {
-      moveSeq.shift(); // skip the flip card moves
+    if (window.moveSeq.length >= 1 && window.moveSeq[0].match(/^F(\d+)$/)) {
+      window.moveSeq.shift(); // skip the flip card moves
     }
     ensureFlippedUp(newState);
   }
