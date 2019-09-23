@@ -1,0 +1,17 @@
+{
+  "name": "shootme-server",
+  "version": "0.1.0",
+  "main": "index.js",
+  "author": "George Lifchits <george.lifchits@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon --inspect index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.2"
+  }
+}
