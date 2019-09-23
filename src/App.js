@@ -120,10 +120,10 @@ function App() {
 
   let ensureFlippedUp = state => {
     let tableau = [...state.tableau];
-    tableau.forEach(talon => {
-      if (talon.length > 0) {
-        let last = talon.length - 1;
-        talon[last] = talon[last].toUpperCase();
+    tableau.forEach(stack => {
+      if (stack.length > 0) {
+        let last = stack.length - 1;
+        stack[last] = stack[last].toUpperCase();
       }
     });
     setState({ ...state, tableau });
@@ -258,15 +258,15 @@ function App() {
           <div className="window__content-inner">
             <div className="solitaire" id="js-solitaire">
               <div id="js-finish" className="finish-deck">
-                {state.foundation.map((talon, i) => (
+                {state.foundation.map((stack, i) => (
                   <div
                     key={i}
                     className={`aces aces--${i}`}
                     onClick={handleFoundationClick(i)}
                   >
-                    {talon.map((card, i) => {
+                    {stack.map((card, i) => {
                       let doClick = () => {};
-                      if (i === talon.length - 1) {
+                      if (i === stack.length - 1) {
                         doClick = handleCardClick(card);
                       }
                       return (
