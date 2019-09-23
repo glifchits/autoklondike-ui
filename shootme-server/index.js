@@ -25,10 +25,10 @@ function parseSolvitaireDeck(shootMeOutput) {
     .split("\n")
     .slice(0, 16)
     .map(line => line.trim())
-    .map(line => line.replace("T", "10").slice(3));
+    .map(line => line.replace(/T/g, "10").slice(3));
 
-  let waste = lines[8].toLowerCase().split(" ");
-  waste.reverse();
+  let stock = lines[8].toLowerCase().split(" ");
+  stock.reverse();
 
   let tabLines = lines.slice(1, 8);
   let tableau = tabLines.map((line, tableauIdx) => {
@@ -46,7 +46,7 @@ function parseSolvitaireDeck(shootMeOutput) {
   });
 
   return {
-    waste,
+    stock,
     tableau
   };
 }
