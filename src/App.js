@@ -1,12 +1,27 @@
 import React, { useState } from "react";
 import { cloneDeep, last } from "lodash";
+import moveSeq from "./moveSeq";
 import "./App.scss";
+window.moveSeq = moveSeq;
+
+const FOUNDATION = {
+  0: "C",
+  1: "D",
+  2: "S",
+  3: "H"
+};
+const SUITS = {
+  C: 0,
+  D: 1,
+  S: 2,
+  H: 3
+};
 
 let stateTracker = [];
 
 window.moves = [];
 function addMove(move) {
-  console.log("move", move);
+  // console.log("move", move);
   window.moves.push(move);
 }
 function drawMove(numToDraw) {
@@ -17,7 +32,7 @@ function drawMove(numToDraw) {
   } else {
     window.moves.push(`D${numToDraw}`);
   }
-  console.log("draw", last(window.moves));
+  // console.log("draw", last(window.moves));
 }
 
 let initialState = {
@@ -53,12 +68,26 @@ let initialState = {
     ["4D"],
     ["4c", "2C"],
     ["3c", "7s", "6S"],
-    ["6h", "Ah", "Ad", "2D"],
-    ["7d", "As", "5c", "8h", "6C"],
-    ["9s", "10s", "Jc", "4h", "Jh", "3S"],
-    ["Jd", "2h", "Ks", "Kd", "5d", "4s", "3H"]
+    ["6h", "ah", "ad", "2D"],
+    ["7d", "as", "5c", "8h", "6C"],
+    ["9s", "10s", "jc", "4h", "jh", "3S"],
+    ["jd", "2h", "ks", "kd", "5d", "4s", "3H"]
   ]
 };
+// let initialState = {
+//   foundation: [["AC", "2C"], ["AH"], [], ["AD", "2D", "3D", "4D"]],
+//   waste: ["10H", "8D", "JS", "9H", "7C", "6D", "8S", "QD"],
+//   stock: ["qc", "9c"],
+//   tableau: [
+//     ["KH", "QS", "JH", "10C", "9D", "8C", "7H", "6C"],
+//     ["KC", "QH", "JC", "10D"],
+//     ["3c", "7s", "6S", "5H", "4C", "3H", "2S"],
+//     ["6H", "5S", "4H", "3S"],
+//     ["7d", "as", "5c", "8H"],
+//     ["9s", "10S"],
+//     ["jd", "2h", "ks", "kd", "5d", "4S"]
+//   ]
+// };
 
 function parseCard(card) {
   let value, suit;
@@ -75,6 +104,64 @@ function parseCard(card) {
 function App() {
   const [state, setStateImpl] = useState(initialState);
   const [clicked, setClicked] = useState(null);
+
+  function doMoveFromSequence() {
+    if (moveSeq.length === 0) {
+      console.error("no moves left!");
+      return;
+    }
+    let move = moveSeq.shift();
+    console.log("move", move);
+    let newState = cloneDeep(state);
+    if (move.match(/^(\d)(\d)$/)) {
+      let [x, y] = move.match(/^(\d)(\d)$/).slice(1);
+      let xT = parseInt(x, 10) - 1;
+      let yT = parseInt(y, 10) - 1;
+      newState.tableau[yT].push(newState.tableau[xT].pop());
+    } else if (move.match(/^(\d)([CDSH])$/)) {
+      let [tableau, suit] = move.match(/^(\d)([CDSH])$/).slice(1);
+      let srcT = parseInt(tableau, 10) - 1;
+      let destF = SUITS[suit];
+      newState.foundation[destF].push(newState.tableau[srcT].pop());
+    } else if (move.match(/^DR(\d+)$/)) {
+      let drawTimes = parseInt(move.match(/^DR(\d+)$/)[1], 10);
+      let drawNum = Math.min(state.stock.length, drawTimes * 3);
+      if (drawTimes > 1 && drawNum === state.stock.length) {
+        // interesting case. It asked to draw more than once even though
+        // it would deplete the deck. How does it restock?
+        debugger;
+      }
+      for (let i = 0; i < drawNum; i++) {
+        newState.waste.push(newState.stock.pop().toUpperCase());
+      }
+    } else if (move.match(/^W(\d)$/)) {
+      let destT = parseInt(move.match(/^W(\d)$/)[1], 10) - 1;
+      newState.tableau[destT].push(newState.waste.pop());
+    } else if (move.match(/^W([CDSH])$/)) {
+      let fnd = SUITS[move.match(/^W([CDSH])$/)[1]];
+      newState.foundation[fnd].push(newState.waste.pop());
+    } else if (move === "NEW") {
+      newState.stock = [...newState.waste].map(c => c.toLowerCase());
+      newState.stock.reverse(); // ShootMe/KlondikeSolver
+      newState.waste = [];
+    } else if (move.match(/^(\d)(\d)-(\d)$/)) {
+      let [x, y, num] = move
+        .match(/^(\d)(\d)-(\d)$/)
+        .slice(1)
+        .map(x => parseInt(x, 10));
+      x--;
+      y--;
+      let movingCards = state.tableau[x].slice(-num);
+      newState.tableau[x] = state.tableau[x].slice(0, -num);
+      newState.tableau[y] = [...state.tableau[y], ...movingCards];
+    } else {
+      debugger;
+    }
+    if (moveSeq.length >= 1 && moveSeq[0].match(/^F(\d+)$/)) {
+      moveSeq.shift(); // skip the flip card moves
+    }
+    ensureFlippedUp(newState);
+  }
 
   function setState(newState) {
     stateTracker.push(state);
@@ -102,6 +189,8 @@ function App() {
     let cardFlip = faceUp ? "card--front" : "card--back";
     return `card card--${suit.toLowerCase()}-${value} ${isClicked} ${cardFlip}`;
   }
+
+  window.copyState = () => window.copy(JSON.stringify(state));
 
   function findCard(card) {
     let srcTableau = state.tableau.map(t => t.indexOf(card) >= 0).indexOf(true);
@@ -166,13 +255,19 @@ function App() {
             return;
           }
           newState.foundation[dest.pile].push(newState.tableau[src.pile].pop());
+          let foundationSuit = FOUNDATION[dest.pile];
+          addMove(`${src.pile + 1}${foundationSuit}`);
         }
-        addMove("move", `${src.pile}${dest.pile}`);
       } else if (src.location === "waste") {
-        newState.tableau[dest.pile].push(newState.waste.pop());
-        addMove("move", `W${dest.pile}`);
+        newState[dest.location][dest.pile].push(newState.waste.pop());
+        addMove(`W${dest.pile + 1}`);
+      } else if (src.location === "foundation") {
+        newState[dest.location][dest.pile].push(
+          newState[src.location][src.pile].pop()
+        );
       } else {
         console.error("unknown card source");
+        debugger;
       }
       setState(newState);
       ensureFlippedUp(newState);
@@ -187,8 +282,20 @@ function App() {
     let newState = cloneDeep(state);
     let src = findCard(clicked);
     if (src.location === "tableau") {
+      if (last(state[src.location][src.pile]) !== clicked) {
+        console.error("cannot bring multiple cards to foundation");
+        setClicked(null);
+        return;
+      }
       newState.tableau[src.pile].pop();
       newState.foundation[foundation].push(clicked);
+      let foundationSuit = FOUNDATION[foundation];
+      addMove(`${src.pile + 1}${foundationSuit}`);
+    } else if (src.location === "waste") {
+      newState.foundation[foundation].push(newState.waste.pop());
+    } else {
+      console.error("unknown source");
+      debugger;
     }
     setState(newState);
     ensureFlippedUp(newState);
@@ -230,8 +337,10 @@ function App() {
 
     let numToDraw = Math.min(state.stock.length, 3);
     for (let i = 0; i < numToDraw; i++) {
-      waste.push(stock.shift().toUpperCase());
+      waste.push(stock.pop().toUpperCase());
     }
+    console.log("stock", stock);
+    console.log("waste", waste);
 
     setState({
       ...state,
@@ -252,6 +361,13 @@ function App() {
         <div className="window__actions">
           <button type="button" className="new-game" onClick={undo}>
             Undo
+          </button>
+          <button
+            type="button"
+            className="new-game"
+            onClick={doMoveFromSequence}
+          >
+            Move
           </button>
         </div>
         <div className="window__content">
