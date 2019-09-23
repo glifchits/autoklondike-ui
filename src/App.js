@@ -1,8 +1,24 @@
 import React, { useState } from "react";
-import { cloneDeep } from "lodash";
+import { cloneDeep, last } from "lodash";
 import "./App.scss";
 
 let stateTracker = [];
+
+window.moves = [];
+function addMove(move) {
+  console.log("move", move);
+  window.moves.push(move);
+}
+function drawMove(numToDraw) {
+  if (window.moves.length > 0 && last(window.moves).match(/^D(\d+)$/)) {
+    let lastMove = window.moves.pop();
+    let num = parseInt(lastMove.match(/^D(\d+)$/)[1], 10);
+    window.moves.push(`D${num + numToDraw}`);
+  } else {
+    window.moves.push(`D${numToDraw}`);
+  }
+  console.log("draw", last(window.moves));
+}
 
 let initialState = {
   foundation: [[], [], [], []],
@@ -127,14 +143,34 @@ function App() {
       let src = findCard(clicked);
       let dest = findCard(card);
       let newState = cloneDeep(state);
+
       if (src.location === "tableau") {
         let clickedIdx = state.tableau[src.pile].indexOf(clicked);
-        let dragPile = state.tableau[src.pile].slice(clickedIdx);
-        let newTableau = state.tableau[src.pile].slice(0, clickedIdx);
-        newState.tableau[src.pile] = newTableau;
-        newState.tableau[dest.pile] = state.tableau[dest.pile].concat(dragPile);
+        if (dest.location === "tableau") {
+          if (src.pile === dest.pile) {
+            console.error("cant move to the same pile");
+            setClicked(null);
+            return;
+          }
+          let dragPile = state.tableau[src.pile].slice(clickedIdx);
+          let newTableau = state.tableau[src.pile].slice(0, clickedIdx);
+          newState.tableau[src.pile] = newTableau;
+          newState.tableau[dest.pile] = [
+            ...state.tableau[dest.pile],
+            ...dragPile
+          ];
+        } else if (dest.location === "foundation") {
+          if (last(state.tableau[src.pile]) !== clicked) {
+            console.error("cant move several cards to foundation");
+            setClicked(null);
+            return;
+          }
+          newState.foundation[dest.pile].push(newState.tableau[src.pile].pop());
+        }
+        addMove("move", `${src.pile}${dest.pile}`);
       } else if (src.location === "waste") {
         newState.tableau[dest.pile].push(newState.waste.pop());
+        addMove("move", `W${dest.pile}`);
       } else {
         console.error("unknown card source");
       }
@@ -202,6 +238,8 @@ function App() {
       stock,
       waste
     });
+
+    drawMove(numToDraw);
   }
 
   return (
