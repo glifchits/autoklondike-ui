@@ -74,20 +74,6 @@ let initialState = {
     ["jd", "2h", "ks", "kd", "5d", "4s", "3H"]
   ]
 };
-// let initialState = {
-//   foundation: [["AC", "2C"], ["AH"], [], ["AD", "2D", "3D", "4D"]],
-//   waste: ["10H", "8D", "JS", "9H", "7C", "6D", "8S", "QD"],
-//   stock: ["qc", "9c"],
-//   tableau: [
-//     ["KH", "QS", "JH", "10C", "9D", "8C", "7H", "6C"],
-//     ["KC", "QH", "JC", "10D"],
-//     ["3c", "7s", "6S", "5H", "4C", "3H", "2S"],
-//     ["6H", "5S", "4H", "3S"],
-//     ["7d", "as", "5c", "8H"],
-//     ["9s", "10S"],
-//     ["jd", "2h", "ks", "kd", "5d", "4S"]
-//   ]
-// };
 
 function parseCard(card) {
   let value, suit;
@@ -162,6 +148,15 @@ function App() {
     }
     ensureFlippedUp(newState);
   }
+  window.doMove = doMoveFromSequence;
+
+  // RUN THIS CODE IN THE BROWSER FOR DEMO
+  // intervalId = setInterval(() => {
+  //   requestAnimationFrame(doMove);
+  //   if (moveSeq.length === 0) {
+  //     clearInterval(intervalId);
+  //   }
+  // }, 100);
 
   function setState(newState) {
     stateTracker.push(state);
