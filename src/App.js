@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { cloneDeep } from "lodash";
 import "./App.scss";
+
+let stateTracker = [];
 
 let initialState = {
   foundation: [[], [], [], []],
@@ -54,8 +57,19 @@ function parseCard(card) {
 }
 
 function App() {
-  const [state, setState] = useState(initialState);
+  const [state, setStateImpl] = useState(initialState);
   const [clicked, setClicked] = useState(null);
+
+  function setState(newState) {
+    stateTracker.push(state);
+    setStateImpl(newState);
+  }
+
+  function undo() {
+    if (stateTracker.length >= 1) {
+      setStateImpl(stateTracker.pop());
+    }
+  }
 
   function cardCls(card) {
     let { value, suit, faceUp } = parseCard(card);
@@ -112,7 +126,7 @@ function App() {
     } else {
       let src = findCard(clicked);
       let dest = findCard(card);
-      let newState = { ...state };
+      let newState = cloneDeep(state);
       if (src.location === "tableau") {
         let clickedIdx = state.tableau[src.pile].indexOf(clicked);
         let dragPile = state.tableau[src.pile].slice(clickedIdx);
@@ -134,7 +148,7 @@ function App() {
     if (clicked === null) {
       return;
     }
-    let newState = { ...state };
+    let newState = cloneDeep(state);
     let src = findCard(clicked);
     if (src.location === "tableau") {
       newState.tableau[src.pile].pop();
@@ -150,7 +164,7 @@ function App() {
       return;
     }
     let src = findCard(clicked);
-    let newState = { ...state };
+    let newState = cloneDeep(state);
     if (src.location === "tableau") {
       let tableau = [...state.tableau];
       let clickedIdx = state.tableau[src.pile].indexOf(clicked);
@@ -198,11 +212,8 @@ function App() {
           Solitaire
         </div>
         <div className="window__actions">
-          <button type="button" id="js-reset" className="new-game">
-            New game
-          </button>
-          <button type="button" id="js-nextmove" className="new-game">
-            Next move
+          <button type="button" className="new-game" onClick={undo}>
+            Undo
           </button>
         </div>
         <div className="window__content">
