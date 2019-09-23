@@ -41,6 +41,16 @@ let initialState = {
   tableau: [[], [], [], [], [], [], []]
 };
 
+// RUN THIS CODE IN THE BROWSER FOR DEMO
+window.autoMove = (delay = 100) => {
+  let intervalId = setInterval(() => {
+    requestAnimationFrame(window.doMove);
+    if (window.moveSeq.length === 0) {
+      clearInterval(intervalId);
+    }
+  }, delay);
+};
+
 function parseCard(card) {
   let value, suit;
   if (card.startsWith("10")) {
@@ -125,14 +135,6 @@ function App() {
     ensureFlippedUp(newState);
   }
   window.doMove = doMoveFromSequence;
-
-  // RUN THIS CODE IN THE BROWSER FOR DEMO
-  // intervalId = setInterval(() => {
-  //   requestAnimationFrame(doMove);
-  //   if (moveSeq.length === 0) {
-  //     clearInterval(intervalId);
-  //   }
-  // }, 100);
 
   function setState(newState) {
     stateTracker.push(state);
