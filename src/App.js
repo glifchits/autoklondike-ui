@@ -86,7 +86,6 @@ function App() {
     if (fnd >= 0) {
       return { location: "foundation", pile: fnd };
     }
-    debugger;
   }
 
   let ensureFlippedUp = state => {
@@ -102,7 +101,6 @@ function App() {
 
   let handleCardClick = card => evt => {
     evt.stopPropagation();
-    console.log("card clicked", card);
     let { faceUp } = parseCard(card);
     if (!faceUp) {
       return;
@@ -114,7 +112,6 @@ function App() {
     } else {
       let src = findCard(clicked);
       let dest = findCard(card);
-      // debugger;
       let newState = { ...state };
       if (src.location === "tableau") {
         let clickedIdx = state.tableau[src.pile].indexOf(clicked);
@@ -125,17 +122,15 @@ function App() {
       } else if (src.location === "waste") {
         newState.tableau[dest.pile].push(newState.waste.pop());
       } else {
-        debugger;
+        console.error("unknown card source");
       }
       setState(newState);
       ensureFlippedUp(newState);
       setClicked(null);
-      // debugger;
     }
   };
 
   let handleFoundationClick = foundation => evt => {
-    console.log(state, foundation, evt, clicked);
     if (clicked === null) {
       return;
     }
@@ -167,7 +162,7 @@ function App() {
     } else if (src.location === "waste") {
       newState.tableau[build].push(newState.waste.pop());
     } else {
-      debugger;
+      console.error("unknown card source");
     }
     setClicked(null);
     setState(newState);
