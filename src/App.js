@@ -39,39 +39,39 @@ let initialState = {
   foundation: [[], [], [], []],
   waste: [],
   stock: [
-    "10h",
     "8d",
-    "7h",
-    "kc",
-    "3d",
-    "10d",
-    "5h",
-    "8c",
-    "qs",
-    "js",
-    "9h",
     "7c",
-    "6d",
-    "8s",
-    "qd",
-    "qh",
-    "ac",
+    "8h",
+    "jd",
     "9c",
-    "5s",
-    "kh",
-    "qc",
+    "3s",
     "2s",
+    "9h",
     "10c",
-    "9d"
+    "10d",
+    "9s",
+    "6h",
+    "jh",
+    "ad",
+    "5d",
+    "ac",
+    "10s",
+    "2d",
+    "7h",
+    "5s",
+    "5c",
+    "6c",
+    "qs",
+    "4d"
   ],
   tableau: [
-    ["4D"],
-    ["4c", "2C"],
-    ["3c", "7s", "6S"],
-    ["6h", "ah", "ad", "2D"],
-    ["7d", "as", "5c", "8h", "6C"],
-    ["9s", "10s", "jc", "4h", "jh", "3S"],
-    ["jd", "2h", "ks", "kd", "5d", "4s", "3H"]
+    ["KH"],
+    ["3h", "QC"],
+    ["2h", "7s", "3C"],
+    ["4h", "4s", "6s", "7D"],
+    ["5h", "8c", "qh", "jc", "2C"],
+    ["js", "qd", "9d", "8s", "ah", "10H"],
+    ["6d", "kc", "kd", "4c", "ks", "as", "3D"]
   ]
 };
 
@@ -112,7 +112,7 @@ function App() {
     } else if (move.match(/^DR(\d+)$/)) {
       let drawTimes = parseInt(move.match(/^DR(\d+)$/)[1], 10);
       let drawNum = Math.min(state.stock.length, drawTimes * 3);
-      if (drawTimes > 1 && drawNum === state.stock.length) {
+      if (drawTimes > 1 && drawNum < drawTimes * 3) {
         // interesting case. It asked to draw more than once even though
         // it would deplete the deck. How does it restock?
         debugger;
