@@ -73,7 +73,7 @@ function App() {
       .then(r => r.json())
       .then(({ deck, moveSeq }) => {
         window.moveSeq = moveSeq;
-        setStateImpl({ ...state, ...deck });
+        setStateImpl(state => ({ ...state, ...deck }));
       });
   }, []);
 
