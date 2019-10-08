@@ -62,7 +62,7 @@ async function shootMeResponse(seed) {
       console.log("we have cached response for seed", seed);
       resolve(cache[seed]);
     } else {
-      const bin = "/Users/glifchits/Development/Klondike-Solver/KlondikeSolver";
+      const bin = "./KlondikeSolver";
       const cmd = `${bin} /G ${seed} /R /DC 3 /MOVES`;
       console.log(`running ${cmd}`);
       exec(cmd, (err, stdout, stderr) => {
