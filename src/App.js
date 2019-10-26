@@ -305,6 +305,7 @@ function App() {
 
     if (stock.length === 0) {
       stock = [...waste].map(c => c.toLowerCase());
+      stock.reverse();
       waste = [];
     }
 
@@ -312,8 +313,8 @@ function App() {
     for (let i = 0; i < numToDraw; i++) {
       waste.push(stock.pop().toUpperCase());
     }
-    console.log("stock", stock);
-    console.log("waste", waste);
+    // console.log("stock", stock);
+    // console.log("waste", waste);
 
     setState({
       ...state,
