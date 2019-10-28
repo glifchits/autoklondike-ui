@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { cloneDeep, last } from "lodash";
 import "./App.scss";
-window.moveSeq = null;
 
 const FOUNDATION = {
   0: "C",
@@ -41,16 +40,6 @@ let initialState = {
   tableau: [[], [], [], [], [], [], []]
 };
 
-// RUN THIS CODE IN THE BROWSER FOR DEMO
-window.autoMove = (delay = 100) => {
-  let intervalId = setInterval(() => {
-    requestAnimationFrame(window.doMove);
-    if (window.moveSeq.length === 0) {
-      clearInterval(intervalId);
-    }
-  }, delay);
-};
-
 function parseCard(card) {
   let value, suit;
   if (card.startsWith("10")) {
@@ -72,17 +61,17 @@ function App() {
     fetch(`http://localhost:3005/game/${seed}`)
       .then(r => r.json())
       .then(({ deck, moveSeq }) => {
-        window.moveSeq = moveSeq;
-        setStateImpl(state => ({ ...state, ...deck }));
+        setStateImpl(state => ({ ...state, moveSeq, ...deck }));
       });
   }, []);
 
   function doMoveFromSequence() {
-    if (window.moveSeq.length === 0) {
+    if (state.moveSeq.length === 0) {
       console.error("no moves left!");
-      return;
+      return false;
     }
-    let move = window.moveSeq.shift();
+    let moveSeq = [...state.moveSeq];
+    let move = moveSeq.shift();
     console.log("move", move);
     let newState = cloneDeep(state);
     if (move.match(/^(\d)(\d)$/)) {
@@ -129,12 +118,26 @@ function App() {
     } else {
       debugger;
     }
-    if (window.moveSeq.length >= 1 && window.moveSeq[0].match(/^F(\d+)$/)) {
-      window.moveSeq.shift(); // skip the flip card moves
+    if (moveSeq.length >= 1 && moveSeq[0].match(/^F(\d+)$/)) {
+      moveSeq.shift(); // skip the flip card moves
     }
+    newState.moveSeq = [...moveSeq];
     ensureFlippedUp(newState);
+    return true;
   }
   window.doMove = doMoveFromSequence;
+
+  // RUN THIS CODE IN THE BROWSER FOR DEMO
+  window.autoMove = (delay = 100) => {
+    let intervalId = setInterval(() => {
+      requestAnimationFrame(() => {
+        let canContinue = window.doMove();
+        if (!canContinue) {
+          clearInterval(intervalId);
+        }
+      });
+    }, delay);
+  };
 
   function setState(newState) {
     stateTracker.push(state);
