@@ -110,9 +110,9 @@ function App() {
       newState.stock = [...newState.waste].map(c => c.toLowerCase());
       newState.stock.reverse(); // ShootMe/KlondikeSolver
       newState.waste = [];
-    } else if (move.match(/^(\d)(\d)-(\d)$/)) {
+    } else if (move.match(/^(\d)(\d)-(\d+)$/)) {
       let [x, y, num] = move
-        .match(/^(\d)(\d)-(\d)$/)
+        .match(/^(\d)(\d)-(\d+)$/)
         .slice(1)
         .map(x => parseInt(x, 10));
       x--;
