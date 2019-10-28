@@ -120,7 +120,15 @@ function App() {
       let movingCards = state.tableau[x].slice(-num);
       newState.tableau[x] = state.tableau[x].slice(0, -num);
       newState.tableau[y] = [...state.tableau[y], ...movingCards];
+    } else if (move.match(/^([CDSH])(\d)$/)) {
+      // move from foundation to tableau
+      let m = move.match(/^([CDSH])(\d)$/);
+      let fnd = SUITS[m[1]];
+      let tab = parseInt(m[2], 10) - 1;
+      let card = newState.foundation[fnd].pop();
+      newState.tableau[tab].push(card);
     } else {
+      console.info("unrecognized move", move);
       debugger;
     }
     if (moveSeq.length >= 1 && moveSeq[0].match(/^F(\d+)$/)) {
