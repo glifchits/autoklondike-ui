@@ -85,15 +85,20 @@ function App() {
       let destF = SUITS[suit];
       newState.foundation[destF].push(newState.tableau[srcT].pop());
     } else if (move.match(/^DR(\d+)$/)) {
+      // allows for more draws than stock allows
+      // this is the idea of the K+ state representation
       let drawTimes = parseInt(move.match(/^DR(\d+)$/)[1], 10);
-      let drawNum = Math.min(state.stock.length, drawTimes * 3);
-      if (drawTimes > 1 && drawNum < drawTimes * 3) {
-        // interesting case. It asked to draw more than once even though
-        // it would deplete the deck. How does it restock?
-        debugger;
-      }
-      for (let i = 0; i < drawNum; i++) {
-        newState.waste.push(newState.stock.pop().toUpperCase());
+      while (drawTimes > 0) {
+        if (newState.stock.length === 0) {
+          newState.stock = [...newState.waste].map(c => c.toLowerCase());
+          newState.stock.reverse(); // ShootMe/KlondikeSolver
+          newState.waste = [];
+        }
+        let stockLen = newState.stock.length;
+        for (let draw = 0; draw < Math.min(3, stockLen); draw++) {
+          newState.waste.push(newState.stock.pop().toUpperCase());
+        }
+        drawTimes--;
       }
     } else if (move.match(/^W(\d)$/)) {
       let destT = parseInt(move.match(/^W(\d)$/)[1], 10) - 1;
