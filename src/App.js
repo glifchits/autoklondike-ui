@@ -352,12 +352,21 @@ function App() {
           <button type="button" className="new-game" onClick={undo}>
             Undo
           </button>
+          {"  "}
           <button
             type="button"
             className="new-game"
             onClick={doMoveFromSequence}
           >
             Move
+          </button>
+          {"  "}
+          <button
+            type="button"
+            className="new-game"
+            onClick={() => window.autoMove(80)}
+          >
+            Auto Solve
           </button>
         </div>
         <div className="window__content">
